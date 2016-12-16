@@ -1,5 +1,6 @@
 from __future__ import print_function
 import usi
+import logging
 import sys
 
 def load(*k, **kw):
@@ -18,6 +19,7 @@ def view(*k, **kw):
         "int_power": "Internal power (dynamic): %0.4f uW",
         "swi_power": "Switching power (dynamic): %0.4f uW"
     }
+    logger = logging.getLogger(__name__) 
     params = usi.cci.parameter.readPropertyDict()
     params = usi.cci.parameter.filterDict(params, "power")
     param_list = usi.cci.parameter.paramsToDict(params)
@@ -31,7 +33,7 @@ def view(*k, **kw):
             out[name] = dict()
           out[name][var] = value
         else:
-          print("Mal formated power parameter:", base)
+          logger.error("Mal formated power parameter:", base)
 
     for comp, var in out.items():
         print("*****************************************************")
@@ -50,7 +52,7 @@ def view(*k, **kw):
     total_sum = 0.0
     total["sta_power"] /= 10e+6
     for name in list(out_category.keys()):
-        print("*", out_category[name] % total[name])
+        logger.info("*", out_category[name] % total[name])
         total_sum += total[name]
     print("* ---------------------------------------------------")
     print("* Total Power: %0.4f" % total_sum, "uW")

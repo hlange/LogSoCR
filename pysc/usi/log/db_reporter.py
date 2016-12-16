@@ -61,7 +61,8 @@ def save_db(phase):
     global logger
     if logger:
         logger.store_buffer()
-
+		
+	
 def report(
     message_type=None,
     message_text=None,

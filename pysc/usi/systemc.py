@@ -1,4 +1,5 @@
 from __future__ import print_function
+import logging
 import usi.api.systemc as api
 
 # Renaming time constants for easy reuse
@@ -18,13 +19,13 @@ TIME_UNITS = {
     MS:"ms",
     SEC:"s"
 }
-
+logger = logging.getLogger(__name__)  
 def start(*k, **kw):
   if api.is_running():
       if hasattr(api, "start"):
           api.start(*k)
       else:
-          print("sc_start is not implemented")
+          logger.warning("sc_start is not implemented")
   from usi import shell
   if shell.is_running():
       shell.stop()
