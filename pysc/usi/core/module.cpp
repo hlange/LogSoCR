@@ -379,105 +379,25 @@ void PythonModule::report_handler(const sc_core::sc_report &rep, const sc_core::
   if(srr) {
     for(std::vector<v::pair>::const_iterator iter = srr->pairs.begin(); iter!=srr->pairs.end(); iter++) {
       PyObject *i = NULL;
+      std::string std_type= "";
       switch(iter->type) {
-        case v::pair::INT32:  
-              i = PyLong_FromLong(boost::any_cast<int32_t>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"int32");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::UINT32: 
-              i = PyLong_FromLong(boost::any_cast<uint32_t>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"uint32");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::INT64:  
-              i = PyLong_FromLongLong(boost::any_cast<int64_t>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"int64");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::UINT64: 
-              i = PyLong_FromUnsignedLongLong(boost::any_cast<uint64_t>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"uint64");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::STRING: 
-              i = PyString_FromString(boost::any_cast<std::string>(iter->data).c_str()); 
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"str");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::BOOL:   
-              i =                   (boost::any_cast<bool>(iter->data))? (Py_INCREF(Py_True), Py_True) : (Py_INCREF(Py_False), Py_False); 
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"bool");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::DOUBLE: 
-              i = PyFloat_FromDouble(boost::any_cast<double>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"double");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        case v::pair::TIME:   
-              i = PyFloat_FromDouble(boost::any_cast<sc_core::sc_time>(iter->data).to_default_time_units()); 
-              if(i) {
-                PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(),"time");
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
-              break;
-        default:              
-              i = PyLong_FromLong(boost::any_cast<int32_t>(iter->data));
-              if(i) {
-                PyObject *key = PyUnicode_FromString(iter->name.c_str());
-                PyDict_SetItem(pairs, key, i);
-                Py_XDECREF(key);
-                Py_XDECREF(i);
-              } else {
-                std::cout << "could not convert to python: " << iter->name << std::endl;
-              }
+        case v::pair::INT32:  i = PyLong_FromLong(boost::any_cast<int32_t>(iter->data)); std_type="int32"; break;
+        case v::pair::UINT32: i = PyLong_FromLong(boost::any_cast<uint32_t>(iter->data));std_type="uint32"; break;
+        case v::pair::INT64:  i = PyLong_FromLongLong(boost::any_cast<int64_t>(iter->data)); std_type="int64"; break;
+        case v::pair::UINT64: i = PyLong_FromUnsignedLongLong(boost::any_cast<uint64_t>(iter->data)); std_type="uint64"; break;
+        case v::pair::STRING: i = PyString_FromString(boost::any_cast<std::string>(iter->data).c_str()); std_type="str"; break;
+        case v::pair::BOOL:   i =                   (boost::any_cast<bool>(iter->data))? (Py_INCREF(Py_True), Py_True) : (Py_INCREF(Py_False), Py_False);  std_type="bool";break;
+        case v::pair::DOUBLE: i = PyFloat_FromDouble(boost::any_cast<double>(iter->data)); std_type="double"; break;
+        case v::pair::TIME:   i = PyFloat_FromDouble(boost::any_cast<sc_core::sc_time>(iter->data).to_default_time_units()); std_type="time"; break;
+        default:              i = PyLong_FromLong(boost::any_cast<int32_t>(iter->data)); std_type="";
+      }
+      if(i) {
+        PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(), std_type.c_str());
+        PyDict_SetItem(pairs, key, i);
+        Py_XDECREF(key);
+        Py_XDECREF(i);
+      } else {
+        std::cout << "could not convert to python: " << iter->name << std::endl;
       }
     }
   }
