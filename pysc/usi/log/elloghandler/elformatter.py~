@@ -17,7 +17,7 @@ class FormatterBase(logging.Formatter):
         # http://docs.python.org/library/logging.html#logrecord-attributes
         #and severity because it would be redudant
         skip_list = (
-            'args', 'asctime', 'created', 'exc_info', 'exc_text',
+            'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
             'funcName', 'id', 'levelno', 'lineno', 'module',
             'msecs', 'message', 'msg', 'name', 'pathname', 'process',
             'processName', 'relativeCreated', 'thread', 'threadName', 'extra',

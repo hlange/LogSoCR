@@ -38,8 +38,8 @@ def start_of_initialization(phase):
         sys.exit(1)
     usi.on("report")(REPORT)
     logger = logging.getLogger(__name__) 
-    logger.info("Set verbosity to level %d" % verbosity)
-    logger.info("Old verbosity level was %d" % usi.set_verbosity(verbosity))
+    logger.error("Set verbosity to level %d" % verbosity)
+    logger.error("Old verbosity level was %d" % usi.set_verbosity(verbosity))
     #print("Set verbosity to level %d" % verbosity)
     #print("Old verbosity level was %d" % usi.set_verbosity(verbosity))
 

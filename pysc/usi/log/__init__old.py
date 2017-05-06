@@ -1,28 +1,18 @@
 from __future__ import print_function
-import logging
 import sys
 import usi
-import usi.systemc
 from usi.tools.args import parser, get_args
 from . import console_reporter
 from . import db_reporter
-
-
-
 
 REPORT = console_reporter.report
 
 parser.add_argument('-r', '--reporter', dest='reporter', action='store', default='console', type=str, help='Changes the backend for the reporter: console (default) or hdf5=<path>')
 parser.add_argument('-v', '--verbosity', dest='verbosity', action='store', default=500, type=int, help='Changes the report verbosity')
-parser.add_argument('-ei', '--el_index', dest='el_index', action='store', default=None, type=str, help='Changes the index for elasticsearch')
-parser.add_argument('-ll', '--loglevel', dest='loglevel', action='store', default='0/0/2', type=str, help='Changes the loglevel of the handler (elasticsearch/file/terminal) (0:Info, 1: Warning, 2:Error, 3: Critical, x: off )')
 
 @usi.on('start_of_initialization')
 def start_of_initialization(phase):
     global REPORT
-    el_index = get_args().el_index
-    loglevel = get_args().loglevel
-    console_reporter.logger_conf(loglevel, el_index )
     reporter = get_args().reporter
     verbosity = get_args().verbosity
     filename = None
@@ -31,15 +21,12 @@ def start_of_initialization(phase):
         db_reporter.logger = db_reporter.Logger(filename)
         REPORT = db_reporter.report
     elif reporter == "console":
-        
         REPORT = console_reporter.report
     else:
         print("Reporter unknown '%s'" % reporter)
         sys.exit(1)
     usi.on("report")(REPORT)
-    logger = logging.getLogger(__name__) 
-    logger.info("Set verbosity to level %d" % verbosity)
-    logger.info("Old verbosity level was %d" % usi.set_verbosity(verbosity))
-    #print("Set verbosity to level %d" % verbosity)
-    #print("Old verbosity level was %d" % usi.set_verbosity(verbosity))
+
+    print("Set verbosity to level %d" % verbosity)
+    print("Old verbosity level was %d" % usi.set_verbosity(verbosity))
 

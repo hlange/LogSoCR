@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 import colorlog
 import logging
@@ -6,19 +5,20 @@ import logging.handlers
 from elloghandler.handler import ElLogHandler
 from socr_streamhandler.handler import SoCR_StreamHandler
 from socr_filehandler.handler import SoCR_FileHandler
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 from datetime import datetime, date, time
 
 
 def logger_conf(loglevel,index=None):
     #Formatter
-    COLORLOG_FORMAT = '@%(time)s ns /%(delta_count)s (%(blue)s%(filename)s%(white)s): %(log_color)s%(levelname)s%(reset)s: %(white)s%(message)s'
-    STD_FORMAT = '@%(time)s ns /%(delta_count)s (%(filename)s): %(levelname)s: %(message)s '
-    FILE_FORMAT = '%(asctime)s @%(time)s ns /%(delta_count)s (%(filename)s): %(levelname)s: %(message)s'
+    COLORLOG_FORMAT = '@%(time)s ns /%(delta_count)s (%(blue)s%(filename)s%(white)s): %(log_color)s%(levelname)s%(reset)s: %(message)s %(parameters)s'
+    STD_FORMAT = '@%(time)s ns /%(delta_count)s (%(filename)s): %(levelname)s: %(message)s %(parameters)s '
+    FILE_FORMAT = '%(asctime)s @%(time)s ns /%(delta_count)s (%(filename)s): %(levelname)s: %(message)s %(parameters)s'
     #Logger initialization
     log_root = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    log_root.setLevel(logging.DEBUG)
+    #disable elastic search logger, makes problem when activated
+    es_log = logging.getLogger("elasticsearch")
+    es_log.propagate = False
 
     #ElasticSearch Handler
     if index is not None:
@@ -43,12 +43,9 @@ def logger_conf(loglevel,index=None):
     
 
     #file handler
-    fh = SoCR_FileHandler(datetime.now().strftime('log_%H:%M_%d_%m_%Y.log'))
-    fh.setFormatter(
-        logging.Formatter(
-            FILE_FORMAT,
-        )
-    )
+    if loglevel[2] != 'x':
+        fh = SoCR_FileHandler(datetime.now().strftime('log_%H:%M_%d_%m_%Y.log'))
+        fh.setFormatter(logging.Formatter(FILE_FORMAT))
     
     #setting the priorities of the handler
     
@@ -96,7 +93,7 @@ def logger_conf(loglevel,index=None):
         pass
     else:
         log_root.addHandler(ch)
-logger = logging.getLogger(__name__)         
+logger = logging.getLogger(__name__)        
 #function for log messages  
 def report(
       message_type=None,
@@ -111,7 +108,14 @@ def report(
       what=None,
       actions=None,
       phase=None,
-      **kwargs):  
+      **kwargs):
+    
+    parameters = " "
+    for value in kwargs:
+      if isinstance(kwargs[value], int):
+          parameters += "{0}={1:#x} ".format(value, kwargs[value])
+      else:
+          parameters += "{0}={1} ".format(value, kwargs[value])
     extra={ 
            'message_type':message_type,
            'severity': severity, 
@@ -123,7 +127,8 @@ def report(
            'verbosity': verbosity, 
            'what': what, 
            'actions': actions, 
-           'phase': phase}
+           'phase': phase,
+           'parameters':parameters}
           
     
     #Collection log information
@@ -137,10 +142,10 @@ def report(
         logger.warning(message_text, extra=extra)
     elif severity == 2:
         logger.error(message_text, extra=extra)     
-    elif severity == 3:
+    elif severity >= 3:
         logger.critical(message_text, extra=extra)
-    elif severity == 4:
-         logger.debug(message_text, extra=extra)
+    
+    
 
 
    

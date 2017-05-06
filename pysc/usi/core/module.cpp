@@ -393,6 +393,7 @@ void PythonModule::report_handler(const sc_core::sc_report &rep, const sc_core::
       }
       if(i) {
         PyObject *key = PyUnicode_FromFormat("%s_%s", iter->name.c_str(), std_type.c_str());
+        //PyObject *key = PyUnicode_FromString(iter->name.c_str());
         PyDict_SetItem(pairs, key, i);
         Py_XDECREF(key);
         Py_XDECREF(i);
